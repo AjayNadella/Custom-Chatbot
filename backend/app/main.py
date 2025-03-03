@@ -120,7 +120,7 @@ async def generate_response(request: ChatbotRequest):
 
     chain = prompt_qa | ChatGroq(
         temperature=0.5,
-        groq_api_key="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",
+        groq_api_key=os.getenv("GROQ_API_KEY"),
         model_name="llama3-70b-8192"
     )
 
