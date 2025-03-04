@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script type="module" src="js/firebaseConfig.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/auth-guard.js"></script>
+    <script type="module" src="js/ask_chat_bot.js"></script>
+</head>
+<body>
+    <h2>Welcome to Your chatbot</h2>
+    <div class="container">
+        <h3>Ask the AI Copilot</h3>
+        <input type="text" id="user-question" placeholder="Enter your question">
+        <button onclick="askChatbot()">Ask</button>
+        <button onclick="history.back()">Back</button>
+
+        <h3>Response</h3>
+        <p id="response"></p>
+    </div>
+
+    <button id="logout-btn">Logout</button>
+
+</body>
+</html>

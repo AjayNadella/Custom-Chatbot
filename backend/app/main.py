@@ -66,7 +66,7 @@ async def get_chatbot_types():
     return {
         "available_chatbot_types": {
             "general": "A general-purpose chatbot for answering any type of question.",
-            "healthcare": "A medical chatbot for health-related topics (educational only).",
+            "healthcare": "A medical chatbot for health-related topics.",
             "finance": "A financial chatbot for banking and investment queries.",
             "legal": "A legal assistant providing general legal definitions and case law insights.",
             "education": "An AI tutor assisting with learning and study materials.",
@@ -84,36 +84,36 @@ async def generate_response(request: ChatbotRequest):
     user_question = request.user_question
     user_id = request.user_id
 
-    chatbot_description = {
-        "general": "A general-purpose chatbot for answering any type of question.",
-        "healthcare": "A medical chatbot for health-related topics (educational only).",
-        "finance": "A financial chatbot for banking and investment queries.",
-        "legal": "A legal assistant providing general legal definitions and case law insights.",
-        "education": "An AI tutor assisting with learning and study materials.",
-        "ecommerce": "A shopping assistant helping users find and compare products."
-    }.get(chatbot_type, "A general-purpose chatbot.")
-
-    results = knowledge_base.query(
+    chatbot_types_response = await get_chatbot_types()
+    chatbot_types = chatbot_types_response["available_chatbot_types"]
+    chatbot_description = chatbot_types.get(chatbot_type, "A general-purpose chatbot.")
+    
+    retrieved_docs = knowledge_base.query(
         query_texts=[user_question],
         n_results=3,
         where={"user_id": user_id}
     )
+    documents = retrieved_docs["documents"]
 
-    document_context = "\n".join(results['documents'][0]) if results['documents'] else "No relevant documents found."
+    retrieved_docs_text = "\n".join(
+            doc if isinstance(doc, str) else " ".join(doc) for doc in documents
+    )
 
     prompt_qa = PromptTemplate.from_template("""
     You are an AI assistant specialized in **{chatbot_type}**.
     Your role: {chatbot_description}
 
     ### KNOWLEDGE BASE:
+    The following information has been retrieved from the medical knowledge base:
     {document_context}
 
     ### USER QUESTION:
     {user_question}
 
     ### INSTRUCTIONS:
-    - Use the retrieved knowledge before supplementing with AI expertise.
-    - Provide clear and structured answers.
+    - Use the information in the knowledge base to craft your response.
+    - If the knowledge base does not contain sufficient information to fully answer the question, supplement your response with your own medical expertise.
+    - Provide your answer in a clear and concise format, suitable for a layperson.
 
     ### RESPONSE:
     """)
@@ -128,7 +128,7 @@ async def generate_response(request: ChatbotRequest):
         "user_question": user_question,
         "chatbot_type": chatbot_type.capitalize(),
         "chatbot_description": chatbot_description,
-        "document_context": document_context
+        "document_context": retrieved_docs_text
     })
 
     return {"chatbot_type": chatbot_type, "response": response.content.strip()}

@@ -5,9 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Copilot - Home</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script type="module" src="js/firebaseConfig.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/auth-guard.js"></script>
 </head>
 <body>
-    <h2>Welcome to AI Copilot</h2>
-    <p>Please <a href="login.html">Login</a> or <a href="signup.html">Sign Up</a> to continue.</p>
+    <div class="container">
+        <h1>Build and Deploy Your Own Chatbot</h1>
+        <button onclick="nextPage('select_chatbot.html')">Next</button>
+    </div>
+    <script>
+        function nextPage(page) {
+            window.location.href = page;
+        }
+    </script>
+    <button id="logout-btn">Logout</button>
 </body>
 </html>

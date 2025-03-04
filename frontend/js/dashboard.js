@@ -50,6 +50,38 @@ window.uploadKnowledge = function () {
     .catch(error => console.error("🚨 Upload Error:", error));
 };
 
+window.loadChatbotTypes = function () {
+    fetch("http://localhost:8000/chatbot-types", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("userToken")}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const chatbotDropdown = document.getElementById("chatbot-type");
+        chatbotDropdown.innerHTML = ""; 
+
+        if (data.available_chatbot_types) {
+            Object.keys(data.available_chatbot_types).forEach(type => {
+                const option = document.createElement("option");
+                option.value = type;
+                option.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} - ${data.available_chatbot_types[type]}`;
+                chatbotDropdown.appendChild(option);
+            });
+        } else {
+            console.error("🚨 Error: No chatbot types found");
+        }
+    })
+    .catch(error => console.error("🚨 Error fetching chatbot types:", error));
+};
+
+// ✅ Load chatbot types when the page loads
+document.addEventListener("DOMContentLoaded", function () {
+    loadChatbotTypes();
+});
+
+
 // ✅ Define `askChatbot` globally so it can be accessed from `dashboard.html`
 window.askChatbot = function () {
     const question = document.getElementById("user-question").value;

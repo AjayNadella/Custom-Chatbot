@@ -22,7 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((userCredential) => userCredential.user.getIdToken())
                 .then((token) => {
                     localStorage.setItem("userToken", token);
-                    window.location.href = "dashboard.html";
+                    console.log("✅ User signed up:", email);
+                    window.location.href = "index.html";
                 })
                 .catch((error) => {
                     console.error("❌ Signup Error:", error.message);
@@ -43,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((token) => {
                     localStorage.setItem("userToken", token);
                     console.log("✅ Logged in successfully.");
-                    window.location.href = "dashboard.html";
+                    window.location.href = "index.html";
                 })
                 .catch((error) => {
                     console.error("❌ Login Error:", error.message);

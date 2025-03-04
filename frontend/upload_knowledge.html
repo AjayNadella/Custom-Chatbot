@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Knowledge Base</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script type="module" src="js/firebaseConfig.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/auth-guard.js"></script>
+    <script src="js/upload.js"></script>
+</head>
+<body onload="fetchUploadedDocuments()">
+    <div class="container">
+        <h1>Upload Knowledge Base</h1>
+        <input type="file" id="knowledge-file">
+        <button onclick="uploadKnowledge()">Upload</button>
+        <h2>Docs Uploaded</h2>
+        <ul id="uploaded-docs"></ul>
+        <button onclick="nextPage('deploy.html')">Next</button>
+        <button onclick="nextPage('ask_chat_bot.html')">chatbot</button>
+        <button onclick="history.back()">Back</button>
+    </div>
+    <script>
+        function nextPage(page) {
+            window.location.href = page;
+        }
+    </script>
+    <button id="logout-btn">Logout</button>
+</body>
+</html>
