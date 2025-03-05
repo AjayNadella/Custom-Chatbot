@@ -36,7 +36,7 @@ window.askChatbot = function () {
         });
     })
     .then(response => response.json())
-    .then(data => {
+    .then(data => {        
         document.getElementById("response").innerText = data.response;
         console.log("🤖 Chatbot Response:", data);
     })

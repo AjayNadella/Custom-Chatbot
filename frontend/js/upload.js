@@ -79,3 +79,31 @@ window.deleteKnowledge = function (filename) {
     })
     .catch(error => console.error("🚨 Delete Error:", error));
 };
+
+window.clearAllKnowledge = function () {
+    fetch("http://localhost:8000/api/upload/clear-knowledge-base", {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${localStorage.getItem("userToken")}` }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("✅ All knowledge cleared:", data);
+        alert("All stored knowledge has been deleted from ChromaDB!");
+
+        // ✅ Force clear uploaded documents from UI immediately
+        const docList = document.getElementById("uploaded-docs");
+        docList.innerHTML = "<p>No documents uploaded yet.</p>";
+
+        // ✅ Ensure knowledge base is refreshed after deletion
+        return fetch("http://localhost:8000/api/upload/refresh-knowledge-base", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${localStorage.getItem("userToken")}` }
+        });
+    })
+    .then(() => {
+        console.log("✅ Knowledge base refreshed.");
+        fetchUploadedDocuments(); // ✅ Fetch updated document list
+    })
+    .catch(error => console.error("🚨 Clear Knowledge Error:", error));
+};
+

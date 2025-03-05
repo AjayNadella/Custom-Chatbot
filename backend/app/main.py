@@ -93,30 +93,31 @@ async def generate_response(request: ChatbotRequest):
         n_results=3,
         where={"user_id": user_id}
     )
+
     documents = retrieved_docs["documents"]
+    metadatas = retrieved_docs["metadatas"]
 
     retrieved_docs_text = "\n".join(
-            doc if isinstance(doc, str) else " ".join(doc) for doc in documents
+        doc if isinstance(doc, str) else " ".join(doc) for doc in documents
     )
 
     prompt_qa = PromptTemplate.from_template("""
     You are an AI assistant specialized in **{chatbot_type}**.
-    Your role: {chatbot_description}
 
-    ### KNOWLEDGE BASE:
-    The following information has been retrieved from the medical knowledge base:
+    ### Instructions:
+    - If the user's question is general (like "hello", "how are you?", "who are you?"), respond naturally as a chatbot and little bit information about the knowledge base.
+    - If the question relates to the uploaded knowledge, retrieve the most relevant information and provide a well-structured answer.
+    - If the knowledge base does not contain relevant information, generate a response using general knowledge.
+    - Keep responses concise and user-friendly.
+
+    ### Retrieved Knowledge:
     {document_context}
 
-    ### USER QUESTION:
+    ### User's Question:
     {user_question}
 
-    ### INSTRUCTIONS:
-    - Use the information in the knowledge base to craft your response.
-    - If the knowledge base does not contain sufficient information to fully answer the question, supplement your response with your own medical expertise.
-    - Provide your answer in a clear and concise format, suitable for a layperson.
-
-    ### RESPONSE:
-    """)
+    ### Response:
+""")
 
     chain = prompt_qa | ChatGroq(
         temperature=0.5,
@@ -127,11 +128,11 @@ async def generate_response(request: ChatbotRequest):
     response = chain.invoke({
         "user_question": user_question,
         "chatbot_type": chatbot_type.capitalize(),
-        "chatbot_description": chatbot_description,
         "document_context": retrieved_docs_text
     })
 
-    return {"chatbot_type": chatbot_type, "response": response.content.strip()}
+    return {"chatbot_type": chatbot_type, "response": response.content.strip(), "retrieved_documents": documents}
+
 
 if __name__ == "__main__":
     print("Running Uvicorn...")
