@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     if (!firebase.apps.length) {
-        console.error("🚨 Firebase not initialized. Ensure `firebaseConfig.js` is loaded first.");
+        console.error("Firebase not initialized. Ensure `firebaseConfig.js` is loaded first.");
         return;
     }
 
@@ -25,11 +25,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// ✅ Define `uploadKnowledge` globally so it can be accessed from `dashboard.html`
 window.uploadKnowledge = function () {
     const fileInput = document.getElementById("knowledge-file");
     if (!fileInput.files.length) {
-        alert("❌ Please select a file to upload.");
+        alert("Please select a file to upload.");
         return;
     }
 
@@ -43,11 +42,11 @@ window.uploadKnowledge = function () {
     })
     .then(response => response.json())
     .then((data) => {
-        console.log("✅ Upload Successful:", data);
+        console.log("Upload Successful:", data);
         alert("Knowledge uploaded successfully!");
         localStorage.setItem("userID", data.user_id)
     })
-    .catch(error => console.error("🚨 Upload Error:", error));
+    .catch(error => console.error("Upload Error:", error));
 };
 
 window.loadChatbotTypes = function () {
@@ -70,26 +69,25 @@ window.loadChatbotTypes = function () {
                 chatbotDropdown.appendChild(option);
             });
         } else {
-            console.error("🚨 Error: No chatbot types found");
+            console.error("Error: No chatbot types found");
         }
     })
-    .catch(error => console.error("🚨 Error fetching chatbot types:", error));
+    .catch(error => console.error("Error fetching chatbot types:", error));
 };
 
-// ✅ Load chatbot types when the page loads
+
 document.addEventListener("DOMContentLoaded", function () {
     loadChatbotTypes();
 });
 
 
-// ✅ Define `askChatbot` globally so it can be accessed from `dashboard.html`
 window.askChatbot = function () {
     const question = document.getElementById("user-question").value;
     const chatbotType = document.getElementById("chatbot-type").value;
     const user_id = localStorage.getItem("userID");
 
     if (!question.trim()) {
-        alert("❌ Please enter a question.");
+        alert("Please enter a question.");
         return;
     }
 
@@ -104,7 +102,7 @@ window.askChatbot = function () {
     .then(response => response.json())
     .then(data => {
         document.getElementById("response").innerText = data.response;
-        console.log("🤖 Chatbot Response:", data);
+        console.log("Chatbot Response:", data);
     })
-    .catch(error => console.error("🚨 Chatbot Error:", error));
+    .catch(error => console.error("Chatbot Error:", error));
 };

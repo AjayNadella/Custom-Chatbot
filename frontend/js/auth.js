@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ Auth.js Loaded");
+    console.log("Auth.js Loaded");
 
     if (!firebase.apps.length) {
-        console.error("🚨 Firebase not initialized. Make sure `firebaseConfig.js` loads first.");
+        console.error("Firebase not initialized. Make sure `firebaseConfig.js` loads first.");
         return;
     }
 
@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const signupForm = document.getElementById("signup-form");
     const loginForm = document.getElementById("login-form");
 
-    // ✅ Signup Function
+    
     if (signupForm) {
         signupForm.addEventListener("submit", function (event) {
             event.preventDefault();
@@ -22,17 +22,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((userCredential) => userCredential.user.getIdToken())
                 .then((token) => {
                     localStorage.setItem("userToken", token);
-                    console.log("✅ User signed up:", email);
+                    console.log("User signed up:", email);
                     window.location.href = "index.html";
                 })
                 .catch((error) => {
-                    console.error("❌ Signup Error:", error.message);
+                    console.error("Signup Error:", error.message);
                     alert(error.message);
                 });
         });
     }
 
-    // ✅ Login Function
+    
     if (loginForm) {
         loginForm.addEventListener("submit", function (event) {
             event.preventDefault();
@@ -43,28 +43,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((userCredential) => userCredential.user.getIdToken())
                 .then((token) => {
                     localStorage.setItem("userToken", token);
-                    console.log("✅ Logged in successfully.");
+                    console.log("Logged in successfully.");
                     window.location.href = "index.html";
                 })
                 .catch((error) => {
-                    console.error("❌ Login Error:", error.message);
+                    console.error("Login Error:", error.message);
                     alert(error.message);
                 });
         });
     }
 
-    // ✅ Logout Function
+    
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", function () {
             auth.signOut()
                 .then(() => {
                     localStorage.removeItem("userToken");
-                    console.log("✅ User logged out.");
+                    console.log("User logged out.");
                     window.location.href = "login.html";
                 })
                 .catch((error) => {
-                    console.error("❌ Logout Error:", error.message);
+                    console.error("Logout Error:", error.message);
                     alert(error.message);
                 });
         });

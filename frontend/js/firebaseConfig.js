@@ -1,9 +1,9 @@
 console.log("Firebase Config Loaded");
 
-// Ensure Firebase SDK is available before initializing Firebase
+
 document.addEventListener("DOMContentLoaded", function () {
     if (typeof firebase === "undefined") {
-        console.error("🚨 Firebase SDK not loaded. Check script order in HTML.");
+        console.error("Firebase SDK not loaded. Check script order in HTML.");
         return;
     }
 
@@ -17,13 +17,13 @@ document.addEventListener("DOMContentLoaded", function () {
         measurementId: "G-ETZZ0MKFF9"
     };
 
-    // ✅ Prevent multiple Firebase initializations
+    
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
-        console.log("✅ Firebase Initialized Successfully");
+        console.log("Firebase Initialized Successfully");
     } else {
-        console.log("⚠️ Firebase already initialized. Using existing instance.");
+        console.log("Firebase already initialized. Using existing instance.");
     }
 
-    window.auth = firebase.auth(); // Store globally for easy access
+    window.auth = firebase.auth(); 
 });

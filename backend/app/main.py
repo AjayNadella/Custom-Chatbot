@@ -25,18 +25,18 @@ print("Initializing FastAPI app...")
 app = FastAPI(title="AI Copilot", version="1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5500"],  # ✅ Allow requests from frontend
+    allow_origins=["http://localhost:5500"],  
     allow_credentials=True,
-    allow_methods=["*"],  # ✅ Allow all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # ✅ Allow all headers
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(upload_router, prefix="/api/upload", tags=["User Knowledge Upload"])
 
-# Security scheme for Firebase authentication
+
 security = HTTPBearer()
 
-# Firebase API URL for token verification
+
 FIREBASE_VERIFY_URL = "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyDZqYgp8LnOZHj8gqi10PgbIbv-h_NQ51g"
 
 def verify_firebase_token(credentials: HTTPAuthorizationCredentials = Security(security)):
@@ -53,7 +53,7 @@ def verify_firebase_token(credentials: HTTPAuthorizationCredentials = Security(s
     if "users" not in data:
         raise HTTPException(status_code=401, detail="Invalid Firebase token")
 
-    return data["users"][0]  # Returns authenticated user info
+    return data["users"][0]  
 
 @app.get("/")
 async def root():

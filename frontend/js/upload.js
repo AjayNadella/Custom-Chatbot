@@ -1,12 +1,12 @@
 window.uploadKnowledge = function () {
     const fileInput = document.getElementById("knowledge-file");
     if (!fileInput.files.length) {
-        alert("❌ Please select a file to upload.");
+        alert("Please select a file to upload.");
         return;
     }
-    const chatbotType = localStorage.getItem("selectedChatbotType");  // ✅ Retrieve chatbot type
+    const chatbotType = localStorage.getItem("selectedChatbotType");  
     if (!chatbotType) {
-        alert("❌ No chatbot type selected. Please go back and select a chatbot type.");
+        alert("No chatbot type selected. Please go back and select a chatbot type.");
         return;
     }
 
@@ -22,12 +22,12 @@ window.uploadKnowledge = function () {
     })
     .then(response => response.json())
     .then((data) => {
-        console.log("✅ Upload Successful:", data);
+        console.log("Upload Successful:", data);
         alert("Knowledge uploaded successfully!");
         localStorage.setItem("userID", data.user_id)
         fetchUploadedDocuments();
     })
-    .catch(error => console.error("🚨 Upload Error:", error));
+    .catch(error => console.error("Upload Error:", error));
 };
 
 window.fetchUploadedDocuments = function () {
@@ -39,7 +39,7 @@ window.fetchUploadedDocuments = function () {
     .then(response => response.json())
     .then(data => {
         const docList = document.getElementById("uploaded-docs");
-        docList.innerHTML = "";  // ✅ Clear list before updating
+        docList.innerHTML = "";  
 
         if (data.documents.length === 0) {
             docList.innerHTML = "<p>No documents uploaded yet.</p>";
@@ -54,10 +54,10 @@ window.fetchUploadedDocuments = function () {
             });
         }
     })
-    .catch(error => console.error("🚨 Error fetching documents:", error));
+    .catch(error => console.error("Error fetching documents:", error));
 };
 
-// ✅ Delete Uploaded Document
+
 window.deleteKnowledge = function (filename) {
     const user_id = localStorage.getItem("userID");
 
@@ -67,17 +67,17 @@ window.deleteKnowledge = function (filename) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("✅ Delete Successful:", data);
+        console.log("Delete Successful:", data);
         alert("Document deleted successfully!");
-        fetchUploadedDocuments(); // ✅ Refresh document list
+        fetchUploadedDocuments(); 
         fetch("http://localhost:8000/api/upload/refresh-knowledge-base", {
             method: "POST",
             headers: { "Authorization": `Bearer ${localStorage.getItem("userToken")}` }
         }).then(() => {
-            console.log("✅ Knowledge base refreshed.");
+            console.log("Knowledge base refreshed.");
         });
     })
-    .catch(error => console.error("🚨 Delete Error:", error));
+    .catch(error => console.error("Delete Error:", error));
 };
 
 window.clearAllKnowledge = function () {
@@ -87,23 +87,23 @@ window.clearAllKnowledge = function () {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("✅ All knowledge cleared:", data);
+        console.log("All knowledge cleared:", data);
         alert("All stored knowledge has been deleted from ChromaDB!");
 
-        // ✅ Force clear uploaded documents from UI immediately
+        
         const docList = document.getElementById("uploaded-docs");
         docList.innerHTML = "<p>No documents uploaded yet.</p>";
 
-        // ✅ Ensure knowledge base is refreshed after deletion
+        
         return fetch("http://localhost:8000/api/upload/refresh-knowledge-base", {
             method: "POST",
             headers: { "Authorization": `Bearer ${localStorage.getItem("userToken")}` }
         });
     })
     .then(() => {
-        console.log("✅ Knowledge base refreshed.");
-        fetchUploadedDocuments(); // ✅ Fetch updated document list
+        console.log("Knowledge base refreshed.");
+        fetchUploadedDocuments(); 
     })
-    .catch(error => console.error("🚨 Clear Knowledge Error:", error));
+    .catch(error => console.error("Clear Knowledge Error:", error));
 };
 
