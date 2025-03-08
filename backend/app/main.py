@@ -74,40 +74,44 @@ async def get_chatbot_types():
         }
     }
 class ChatbotRequest(BaseModel):
-    user_id: str
     user_question: str
     chatbot_type: str = "general"
+
 @app.post("/generate-response", dependencies=[Depends(verify_firebase_token)])
-async def generate_response(request: ChatbotRequest):
+async def generate_response(request: ChatbotRequest, user: dict = Depends(verify_firebase_token)):
     """Handles chatbot queries (Protected: Requires login)."""
+    
+    user_id = user["localId"]  
     chatbot_type = request.chatbot_type
     user_question = request.user_question
-    user_id = request.user_id
 
     chatbot_types_response = await get_chatbot_types()
     chatbot_types = chatbot_types_response["available_chatbot_types"]
     chatbot_description = chatbot_types.get(chatbot_type, "A general-purpose chatbot.")
+
     
     retrieved_docs = knowledge_base.query(
         query_texts=[user_question],
         n_results=3,
-        where={"user_id": user_id}
+        where={"user_id": user_id}  
     )
 
     documents = retrieved_docs["documents"]
-    metadatas = retrieved_docs["metadatas"]
 
-    retrieved_docs_text = "\n".join(
-        doc if isinstance(doc, str) else " ".join(doc) for doc in documents
-    )
+
+    if not documents:
+        retrieved_docs_text = "No relevant knowledge found in your database. Answering based on general AI knowledge."
+    else:
+        retrieved_docs_text = "\n".join(doc if isinstance(doc, str) else " ".join(doc) for doc in documents)
 
     prompt_qa = PromptTemplate.from_template("""
     You are an AI assistant specialized in **{chatbot_type}**.
+    Your role: {chatbot_description}
 
     ### Instructions:
-    - If the user's question is general (like "hello", "how are you?", "who are you?"), respond naturally as a chatbot and little bit information about the knowledge base.
+    - If the user's question is general (like "hello", "how are you?", "who are you?"), respond naturally as a chatbot while briefly mentioning that you use knowledge from uploaded documents.
     - If the question relates to the uploaded knowledge, retrieve the most relevant information and provide a well-structured answer.
-    - If the knowledge base does not contain relevant information, generate a response using general knowledge.
+    - If the knowledge base does not contain relevant information, generate a response using general AI knowledge.
     - Keep responses concise and user-friendly.
 
     ### Retrieved Knowledge:
@@ -117,7 +121,7 @@ async def generate_response(request: ChatbotRequest):
     {user_question}
 
     ### Response:
-""")
+    """)
 
     chain = prompt_qa | ChatGroq(
         temperature=0.5,
@@ -128,10 +132,15 @@ async def generate_response(request: ChatbotRequest):
     response = chain.invoke({
         "user_question": user_question,
         "chatbot_type": chatbot_type.capitalize(),
+        "chatbot_description": chatbot_description,
         "document_context": retrieved_docs_text
     })
 
-    return {"chatbot_type": chatbot_type, "response": response.content.strip(), "retrieved_documents": documents}
+    return {
+        "chatbot_type": chatbot_type,
+        "response": response.content.strip(),
+        "retrieved_documents": documents
+    }
 
 
 if __name__ == "__main__":

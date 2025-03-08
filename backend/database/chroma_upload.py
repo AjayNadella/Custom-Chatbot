@@ -80,7 +80,10 @@ async def upload_knowledge(file: UploadFile = File(...), user: dict = Depends(ve
 @router.get("/list-knowledge/{user_id}")
 async def list_uploaded_knowledge(user_id: str, user: dict = Depends(verify_firebase_token)):
     """Lists all uploaded documents for a user."""
-    
+    auth_user_id = user["localId"]
+    if auth_user_id != user_id: 
+        raise HTTPException(status_code=403, detail="Access denied.")
+
     upload_folder = f"uploaded_knowledge/{user_id}"
     if not os.path.exists(upload_folder):
         return {"documents": []}
@@ -91,77 +94,90 @@ async def list_uploaded_knowledge(user_id: str, user: dict = Depends(verify_fire
 
 @router.delete("/delete-knowledge/{user_id}/{filename}")
 async def delete_knowledge(user_id: str, filename: str, user: dict = Depends(verify_firebase_token)):
-    """Deletes all embeddings related to a document from ChromaDB and removes the file from storage."""
-    global knowledge_base
+    """Deletes a document's embeddings from ChromaDB and removes the file from storage."""
 
-    
-    docs_to_delete = knowledge_base.get(where={
-        "$and": [
-            {"user_id": user_id},
-            {"file": filename}
-        ]
-    })
+    global knowledge_base  
 
-    
+    auth_user_id = user["localId"]  
+
+    if auth_user_id != user_id:  
+        raise HTTPException(status_code=403, detail="Access denied. You can only delete your own documents.")
+
+    # ✅ Use `$and` to correctly filter by `user_id` and `file`
+    try:
+        docs_to_delete = knowledge_base.get(where={
+            "$and": [
+                {"user_id": user_id},
+                {"file": filename}
+            ]
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving documents from ChromaDB: {str(e)}")
+
+    # ✅ Delete embeddings from ChromaDB
     if docs_to_delete and "ids" in docs_to_delete:
         knowledge_base.delete(ids=docs_to_delete["ids"])
-        print(f"Deleted {len(docs_to_delete['ids'])} embeddings from ChromaDB for {filename}")
+        print(f"✅ Deleted {len(docs_to_delete['ids'])} embeddings from ChromaDB for {filename}")
     else:
         print(f"⚠️ No embeddings found in ChromaDB for {filename}")
 
-    
-    file_path = f"uploaded_knowledge/{user_id}/{filename}"
+    # ✅ Delete file from user-specific storage
+    file_path = os.path.join(UPLOAD_DIR, user_id, filename)
     if os.path.exists(file_path):
         os.remove(file_path)
-        print(f"Deleted from Storage: {file_path}")
+        print(f"✅ Deleted from Storage: {file_path}")
+    else:
+        print(f"⚠️ File not found: {file_path}")
 
-    
-    knowledge_base = chroma_client.get_or_create_collection(name="chatbot_knowledge")
-    print("Knowledge base refreshed after deletion.")
+    # ✅ Refresh knowledge base after deletion
+    try:
+        knowledge_base = chroma_client.get_or_create_collection(name="chatbot_knowledge")
+        print("✅ Knowledge base refreshed after deletion.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error refreshing ChromaDB: {str(e)}")
 
     return {"message": "Document and related data deleted successfully"}
 
-    
+
+
+
 @router.post("/refresh-knowledge-base")
 async def refresh_knowledge_base():
     """Reinitializes the ChromaDB knowledge base to reflect updates."""
     global knowledge_base
 
-    
     knowledge_base = chroma_client.get_or_create_collection(name="chatbot_knowledge", metadata={"hnsw:space": "cosine"})
     
     return {"message": "Knowledge base refreshed successfully!"}
 
 
-
 @router.delete("/clear-knowledge-base")
-async def clear_knowledge_base():
-    """Completely deletes all stored knowledge from ChromaDB and removes all uploaded files."""
-    
-    global knowledge_base  
+async def clear_knowledge_base(user: dict = Depends(verify_firebase_token)):
+    """Deletes all stored knowledge and uploaded files for the logged-in user only."""
+    global knowledge_base
+    user_id = user["localId"]  
 
     
-    all_docs = knowledge_base.get()  
-    doc_ids = all_docs.get("ids", [])  
-    
-    if doc_ids:
-        
-        knowledge_base.delete(ids=doc_ids)
-        print(f"🚀 Deleted {len(doc_ids)} documents from ChromaDB.")
+    user_docs = knowledge_base.get(where={"user_id": user_id})
+    user_doc_ids = user_docs.get("ids", [])
+
+    if user_doc_ids:
+        knowledge_base.delete(ids=user_doc_ids)
+        print(f"Deleted {len(user_doc_ids)} documents from ChromaDB for user {user_id}.")
     else:
-        print("No documents found in ChromaDB.")
+        print(f"No documents found in ChromaDB for user {user_id}.")
 
     
-    upload_folder = "uploaded_knowledge"
-    if os.path.exists(upload_folder):
-        shutil.rmtree(upload_folder)  
-        os.makedirs(upload_folder, exist_ok=True)  
-        print("All uploaded knowledge files deleted.")
+    user_folder = os.path.join(UPLOAD_DIR, user_id)
+    if os.path.exists(user_folder):
+        shutil.rmtree(user_folder)  
+        os.makedirs(user_folder, exist_ok=True)  
+        print(f"Deleted all uploaded files for user {user_id}.")
+    else:
+        print(f"No uploaded files found for user {user_id}.")
 
     
     knowledge_base = chroma_client.get_or_create_collection(name="chatbot_knowledge")
-    print(" Knowledge base reset successfully.")
+    print("Knowledge base reset successfully.")
 
-    return {"message": "All stored knowledge and uploaded files have been deleted from ChromaDB and storage."}
-
-
+    return {"message": f"All knowledge and uploaded files for user {user_id} have been deleted."}
