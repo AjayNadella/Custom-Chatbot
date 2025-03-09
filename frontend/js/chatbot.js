@@ -18,10 +18,10 @@ window.loadChatbotTypes = function () {
                 chatbotDropdown.appendChild(option);
             });
         } else {
-            console.error("🚨 Error: No chatbot types found");
+            console.error("Error: No chatbot types found");
         }
     })
-    .catch(error => console.error("🚨 Error fetching chatbot types:", error));
+    .catch(error => console.error("Error fetching chatbot types:", error));
 };
 document.addEventListener("DOMContentLoaded", function () {
     loadChatbotTypes();

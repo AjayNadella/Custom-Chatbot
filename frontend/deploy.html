@@ -9,13 +9,17 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script type="module" src="js/firebaseConfig.js"></script>
     <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/deploy.js"></script>
 </head>
-<body>
-    <div class="container">
-        <h1>Deploy Your Chatbot</h1>
-        <p>Your chatbot is now ready! Embed it into your website using this code:</p>
-        <pre><code>&lt;iframe src="http://your-chatbot.com/chatbot?user_id=YOUR_USER_ID"&gt;&lt;/iframe&gt;</code></pre>
-        <button onclick="history.back()">Back</button>
+<body onload="getChatbotEmbedCode()">
+    <h2>Embed Your Chatbot on Your Website</h2>
+    <p>Copy and paste the following code into your website to integrate your chatbot:</p>
+
+    <div id="embed-code-container">
+        <p>Loading chatbot embed code...</p>
     </div>
+
+    <button onclick="getChatbotEmbedCode()">Refresh Code</button>
+    <button onclick="history.back()">Back</button>
 </body>
 </html>

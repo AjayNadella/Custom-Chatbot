@@ -25,7 +25,7 @@ print("Initializing FastAPI app...")
 app = FastAPI(title="AI Copilot", version="1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5500"],  
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"],  
@@ -139,8 +139,99 @@ async def generate_response(request: ChatbotRequest, user: dict = Depends(verify
     return {
         "chatbot_type": chatbot_type,
         "response": response.content.strip(),
-        "retrieved_documents": documents
     }
+
+@app.post("/user-chatbot/{user_id}")
+async def user_chatbot(
+    user_id: str, 
+    user_question: str = Body(..., embed=True),
+    chatbot_type: str = "general"
+):
+    chatbot_types_response = await get_chatbot_types()
+    chatbot_types = chatbot_types_response["available_chatbot_types"]
+    chatbot_description = chatbot_types.get(chatbot_type, "A general-purpose chatbot.")
+    
+    
+    """Allows external applications to query the chatbot API."""
+
+    retrieved_docs = knowledge_base.query(
+        query_texts=[user_question],
+        n_results=3,
+        where={"user_id": user_id}  
+    )
+
+    documents = retrieved_docs["documents"]
+    retrieved_docs_text = "\n".join(doc if isinstance(doc, str) else " ".join(doc) for doc in documents)
+
+    prompt_qa = PromptTemplate.from_template("""
+   You are an AI assistant.
+    
+    ### Instructions:
+    - If the user's question is general (like "hello", "how are you?", "who are you?"), respond naturally as a chatbot while briefly mentioning that you use knowledge from uploaded documents.
+    - If the question relates to the uploaded knowledge, retrieve the most relevant information and provide a well-structured answer.
+    - If the knowledge base does not contain relevant information, generate a response using general AI knowledge.
+    - Keep responses concise and user-friendly.
+
+    ### Retrieved Knowledge:
+    {document_context}
+
+    ### User's Question:
+    {user_question}
+
+    ### Response:
+    """)
+
+    chain = prompt_qa | ChatGroq(
+        temperature=0.5,
+        groq_api_key=os.getenv("GROQ_API_KEY"),
+        model_name="llama3-70b-8192"
+    )
+
+    response = chain.invoke({
+        "user_question": user_question,
+        "document_context": retrieved_docs_text
+    })
+
+    return {"response": response.content.strip()}
+
+@app.get("/deploy-chatbot/{user_id}")
+async def deploy_chatbot(user_id: str, user: dict = Depends(verify_firebase_token)):
+    """Generates a JavaScript chatbot embed code for external websites."""
+    
+    auth_user_id = user["localId"]
+    if auth_user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied. You can only deploy your own chatbot.")
+
+    # ✅ Chatbot script no longer requires authentication on frontend
+    embed_code = f"""
+    <script>
+        async function askChatbot(question) {{
+            const response = await fetch("http://localhost:8000/user-chatbot/{user_id}", {{
+                method: "POST",
+                headers: {{
+                    "Content-Type": "application/json"
+                }},
+                body: JSON.stringify({{ "user_question": question }})
+            }});
+
+            if (!response.ok) {{
+                alert("❌ API Error: " + response.status + " " + response.statusText);
+                return;
+            }}
+
+            const data = await response.json();
+            document.getElementById("chatbot-response").innerText = data.response;
+        }}
+    </script>
+
+    <input type="text" id="chatbot-input" placeholder="Ask me anything..." />
+    <button onclick="askChatbot(document.getElementById('chatbot-input').value)">Ask</button>
+    <p id="chatbot-response"></p>
+    """
+
+    return {"embed_code": embed_code}
+
+
 
 
 if __name__ == "__main__":
