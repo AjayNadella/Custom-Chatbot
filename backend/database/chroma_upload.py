@@ -103,7 +103,7 @@ async def delete_knowledge(user_id: str, filename: str, user: dict = Depends(ver
     if auth_user_id != user_id:  
         raise HTTPException(status_code=403, detail="Access denied. You can only delete your own documents.")
 
-    # ✅ Use `$and` to correctly filter by `user_id` and `file`
+    
     try:
         docs_to_delete = knowledge_base.get(where={
             "$and": [
@@ -114,25 +114,25 @@ async def delete_knowledge(user_id: str, filename: str, user: dict = Depends(ver
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving documents from ChromaDB: {str(e)}")
 
-    # ✅ Delete embeddings from ChromaDB
+    
     if docs_to_delete and "ids" in docs_to_delete:
         knowledge_base.delete(ids=docs_to_delete["ids"])
-        print(f"✅ Deleted {len(docs_to_delete['ids'])} embeddings from ChromaDB for {filename}")
+        print(f"Deleted {len(docs_to_delete['ids'])} embeddings from ChromaDB for {filename}")
     else:
-        print(f"⚠️ No embeddings found in ChromaDB for {filename}")
+        print(f"No embeddings found in ChromaDB for {filename}")
 
-    # ✅ Delete file from user-specific storage
+    
     file_path = os.path.join(UPLOAD_DIR, user_id, filename)
     if os.path.exists(file_path):
         os.remove(file_path)
-        print(f"✅ Deleted from Storage: {file_path}")
+        print(f"Deleted from Storage: {file_path}")
     else:
-        print(f"⚠️ File not found: {file_path}")
+        print(f"File not found: {file_path}")
 
-    # ✅ Refresh knowledge base after deletion
+    
     try:
         knowledge_base = chroma_client.get_or_create_collection(name="chatbot_knowledge")
-        print("✅ Knowledge base refreshed after deletion.")
+        print("Knowledge base refreshed after deletion.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error refreshing ChromaDB: {str(e)}")
 

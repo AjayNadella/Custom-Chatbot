@@ -58,7 +58,7 @@ def verify_firebase_token(credentials: HTTPAuthorizationCredentials = Security(s
 @app.get("/")
 async def root():
     """Root endpoint for API health check."""
-    return {"message": "AI Copilot is running 🚀"}
+    return {"message": "AI Copilot is running"}
 
 @app.get("/chatbot-types", dependencies=[Depends(verify_firebase_token)])
 async def get_chatbot_types():
@@ -145,7 +145,7 @@ async def generate_response(request: ChatbotRequest, user: dict = Depends(verify
 async def user_chatbot(
     user_id: str, 
     user_question: str = Body(..., embed=True),
-    chatbot_type: str = "general"
+    chatbot_type: str = Body(..., embed=True)
 ):
     chatbot_types_response = await get_chatbot_types()
     chatbot_types = chatbot_types_response["available_chatbot_types"]
@@ -164,7 +164,8 @@ async def user_chatbot(
     retrieved_docs_text = "\n".join(doc if isinstance(doc, str) else " ".join(doc) for doc in documents)
 
     prompt_qa = PromptTemplate.from_template("""
-   You are an AI assistant.
+   You are an AI assistant specialized in **{chatbot_type}**.
+   Your role: {chatbot_description}
     
     ### Instructions:
     - If the user's question is general (like "hello", "how are you?", "who are you?"), respond naturally as a chatbot while briefly mentioning that you use knowledge from uploaded documents.
@@ -189,33 +190,39 @@ async def user_chatbot(
 
     response = chain.invoke({
         "user_question": user_question,
-        "document_context": retrieved_docs_text
+        "document_context": retrieved_docs_text,
+        "chatbot_type": chatbot_type.capitalize(),
+        "chatbot_description": chatbot_description
     })
 
-    return {"response": response.content.strip()}
+    return {"chatbot_type": chatbot_type, "response": response.content.strip()}
 
-@app.get("/deploy-chatbot/{user_id}")
-async def deploy_chatbot(user_id: str, user: dict = Depends(verify_firebase_token)):
+@app.get("/deploy-chatbot/{user_id}/{chatbot_type}")
+async def deploy_chatbot(user_id: str,chatbot_type: str, user: dict = Depends(verify_firebase_token)):
     """Generates a JavaScript chatbot embed code for external websites."""
     
     auth_user_id = user["localId"]
     if auth_user_id != user_id:
         raise HTTPException(status_code=403, detail="Access denied. You can only deploy your own chatbot.")
 
-    # ✅ Chatbot script no longer requires authentication on frontend
+    
     embed_code = f"""
     <script>
+        const chatbotType = "{chatbot_type}";
+
         async function askChatbot(question) {{
             const response = await fetch("http://localhost:8000/user-chatbot/{user_id}", {{
                 method: "POST",
                 headers: {{
                     "Content-Type": "application/json"
                 }},
-                body: JSON.stringify({{ "user_question": question }})
+                body: JSON.stringify({{ 
+                    "user_question": question,
+                    "chatbot_type": chatbotType }})
             }});
 
             if (!response.ok) {{
-                alert("❌ API Error: " + response.status + " " + response.statusText);
+                alert("API Error: " + response.status + " " + response.statusText);
                 return;
             }}
 

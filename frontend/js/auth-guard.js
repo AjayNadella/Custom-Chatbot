@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     if (!firebase.apps.length) {
-        console.error("🚨 Firebase not initialized. Ensure `firebaseConfig.js` is loaded first.");
+        console.error("Firebase not initialized. Ensure `firebaseConfig.js` is loaded first.");
         return;
     }
 
