@@ -3,32 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Chatbot Type</title>
+    <title>Select or Create Chatbot</title>
     <link rel="stylesheet" href="css/styles.css">
     <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script type="module" src="js/firebaseConfig.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
-    <script type="module" src="js/chatbot.js"></script>
+    <script type="module" src="js/chatbot.js"></script> 
 </head>
-<body onload="loadChatbotTypes()">
+<body onload="loadChatbots(); loadChatbotTypes();">
     <div class="container">
-        <h1>Select Chatbot Type</h1>
-        <select id="chatbot-type" onchange="storeChatbotType()"></select>
+        <h1>Select or Create a Chatbot</h1>
+
+        
+        <label for="chatbot-list">Choose a Chatbot:</label>
+        <select id="chatbot-list" onchange="storeChatbotSelection()">
+            <option value="" disabled selected>-- Select a chatbot --</option>
+        </select>
+        
+
+        <button onclick="deleteChatbot()">Delete Selected Chatbot</button>
+
+        <hr>
+
+        
+        <label for="chatbot-type">Select Chatbot Type:</label>
+        <select id="chatbot-type"></select>
+
+        
+        <input type="text" id="new-chatbot-name" placeholder="Enter new chatbot name">
+        <button onclick="createChatbot()">Create Chatbot</button>
+
+        <hr>
+
+        
         <button onclick="nextPage('upload_knowledge.html')">Next</button>
         <button onclick="history.back()">Back</button>
     </div>
+
     <script>
+        const token = localStorage.getItem("userToken");
+
+        function loadChatbots() {
+            fetch("http://localhost:8000/chatbot/list", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const chatbotList = document.getElementById("chatbot-list");
+                chatbotList.innerHTML = "<option value='' disabled selected>-- Select a chatbot --</option>";
+
+                data.chatbots.forEach(chatbot => {
+                    if (!chatbot.includes(".")) { 
+                        chatbotList.innerHTML += `<option value="${chatbot}">${chatbot}</option>`;
+                    }
+                })
+            })
+            .catch(error => console.error("Error loading chatbots:", error));
+        }
+
+        function loadChatbotTypes() {
+            fetch("http://localhost:8000/chatbot-types", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const chatbotTypeSelect = document.getElementById("chatbot-type");
+                chatbotTypeSelect.innerHTML = "";
+
+                for (const [key, value] of Object.entries(data.available_chatbot_types)) {
+                    chatbotTypeSelect.innerHTML += `<option value="${key}">${value}</option>`;
+                }
+            })
+            .catch(error => console.error("Error loading chatbot types:", error));
+        }
+
+        function storeChatbotSelection() {
+            const chatbotName = document.getElementById("chatbot-list").value;
+            localStorage.setItem("selectedChatbot", chatbotName);
+            console.log("Selected Chatbot:", chatbotName);
+        }
+
+        function createChatbot() {
+            const chatbotName = document.getElementById("new-chatbot-name").value;
+            const chatbotType = document.getElementById("chatbot-type").value;
+            if (!chatbotName.trim()) {
+                alert("Please enter a chatbot name.");
+                return;
+            }
+
+            fetch("http://localhost:8000/chatbot/create", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ chatbot_name: chatbotName, chatbot_type: chatbotType })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadChatbots();  
+                document.getElementById("new-chatbot-name").value = "";  
+            })
+            .catch(error => console.error("Error creating chatbot:", error));
+        }
+
+        function deleteChatbot() {
+            const chatbotName = document.getElementById("chatbot-list").value;
+            if (!chatbotName) {
+                alert("Please select a chatbot to delete.");
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete chatbot "${chatbotName}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            fetch(`http://localhost:8000/chatbot/delete/${chatbotName}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadChatbots();  // Refresh chatbot list after deletion
+                localStorage.removeItem("selectedChatbot");  // Remove selection if chatbot is deleted
+            })
+            .catch(error => console.error("Error deleting chatbot:", error));
+        }
+
         function nextPage(page) {
+            if (!localStorage.getItem("selectedChatbot")) {
+                alert("Please select a chatbot before proceeding.");
+                return;
+            }
             window.location.href = page;
         }
-        function storeChatbotType() {
-            const selectedType = document.getElementById("chatbot-type").value;
-            localStorage.setItem("selectedChatbotType", selectedType);
-            console.log("Chatbot Type Saved:", selectedType);
-        }
     </script>
+
     <button id="logout-btn">Logout</button>
 </body>
 </html>

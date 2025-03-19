@@ -4,18 +4,18 @@ window.uploadKnowledge = function () {
         alert("Please select a file to upload.");
         return;
     }
-    const chatbotType = localStorage.getItem("selectedChatbotType");  
-    if (!chatbotType) {
-        alert("No chatbot type selected. Please go back and select a chatbot type.");
+
+    const chatbotName = localStorage.getItem("selectedChatbot");
+    if (!chatbotName) {
+        alert("No chatbot selected. Please go back and select a chatbot.");
         return;
     }
 
     const user_id = localStorage.getItem("userID");
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
-    formData.append("chatbot_type", chatbotType);
 
-    fetch("http://localhost:8000/api/upload/upload-knowledge", {
+    fetch(`http://localhost:8000/api/upload/upload-knowledge/${chatbotName}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${localStorage.getItem("userToken")}` },
         body: formData
@@ -23,45 +23,37 @@ window.uploadKnowledge = function () {
     .then(response => response.json())
     .then((data) => {
         console.log("Upload Successful:", data);
-        alert("Knowledge uploaded successfully!");
-        localStorage.setItem("userID", data.user_id)
+        alert(`Knowledge uploaded successfully to chatbot "${chatbotName}"!`);
         fetchUploadedDocuments();
     })
-    .catch(error => console.error("Upload Error:", error));
+    .catch(error => {
+        console.error("Upload Error:", error);
+        alert(`Upload Error: ${error.message}`);
+    });
 };
 
 window.fetchUploadedDocuments = function () {
+    const chatbotName = localStorage.getItem("selectedChatbot");
     const user_id = localStorage.getItem("userID");
     const token = localStorage.getItem("userToken");
 
-    if (!user_id || !token) {
-        console.error("No user ID or token found. Ensure the user is logged in.");
-        document.getElementById("uploaded-docs").innerHTML = "<p style='color:red;'>User not authenticated. Please log in.</p>";
+    if (!user_id || !token || !chatbotName) {
+        console.error("Missing data. Ensure the user is logged in and chatbot is selected.");
+        document.getElementById("uploaded-docs").innerHTML = "<p style='color:red;'>User not authenticated or chatbot not selected.</p>";
         return;
     }
 
-    fetch(`http://localhost:8000/api/upload/list-knowledge/${user_id}`, {
+    fetch(`http://localhost:8000/api/upload/list-knowledge/${user_id}/${chatbotName}`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` }
     })
-    .then(response => {
-        if (!response.ok) {
-            if (response.status === 403) {
-                throw new Error("Access denied: You can only view your own documents.");
-            } else if (response.status === 401) {
-                throw new Error("Unauthorized: Please log in again.");
-            } else {
-                throw new Error(`Server error: ${response.status}`);
-            }
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         const docList = document.getElementById("uploaded-docs");
-        docList.innerHTML = "";  
+        docList.innerHTML = "";
 
         if (!data.documents || data.documents.length === 0) {
-            docList.innerHTML = "<p>No documents uploaded yet.</p>";
+            docList.innerHTML = "<p>No documents uploaded for this chatbot.</p>";
         } else {
             data.documents.forEach(doc => {
                 const listItem = document.createElement("li");
@@ -74,22 +66,22 @@ window.fetchUploadedDocuments = function () {
         }
     })
     .catch(error => {
-        console.error("Error fetching documents:", error.message);
+        console.error("Error fetching documents:", error);
         document.getElementById("uploaded-docs").innerHTML = `<p style="color:red;">${error.message}</p>`;
     });
 };
 
-
-window.onload = function () {
-    setTimeout(fetchUploadedDocuments, 500);  
-};
-
-
 window.deleteKnowledge = function (filename) {
+    const chatbotName = localStorage.getItem("selectedChatbot");
     const user_id = localStorage.getItem("userID");
     const token = localStorage.getItem("userToken");
 
-    fetch(`http://localhost:8000/api/upload/delete-knowledge/${user_id}/${filename}`, {
+    if (!chatbotName) {
+        alert("No chatbot selected. Please select a chatbot.");
+        return;
+    }
+
+    fetch(`http://localhost:8000/api/upload/delete-knowledge/${user_id}/${chatbotName}/${filename}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
     })
@@ -100,14 +92,12 @@ window.deleteKnowledge = function (filename) {
         return response.json();
     })
     .then(data => {
-        console.log("Delete Successful:", data);
+        console.log(" Delete Successful:", data);
         alert("Document deleted successfully!");
 
-        
         fetchUploadedDocuments();
 
-        
-        return fetch("http://localhost:8000/api/upload/refresh-knowledge-base", {
+        return fetch(`http://localhost:8000/api/upload/refresh-knowledge-base/${user_id}/${chatbotName}`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -116,16 +106,17 @@ window.deleteKnowledge = function (filename) {
         console.log("Knowledge base refreshed.");
     })
     .catch(error => {
-        console.error("Delete Error:", error.message);
-        alert("Error deleting document. Please try again.");
+        console.error("Delete Error:", error);
+        alert(`Error deleting document: ${error.message}`);
     });
 };
 
-
 window.clearAllKnowledge = function () {
+    const chatbotName = localStorage.getItem("selectedChatbot");
+    const user_id = localStorage.getItem("userID");
     const token = localStorage.getItem("userToken");
 
-    fetch("http://localhost:8000/api/upload/clear-knowledge-base", {
+    fetch(`http://localhost:8000/api/upload/clear-knowledge-base/${user_id}/${chatbotName}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
     })
@@ -137,13 +128,11 @@ window.clearAllKnowledge = function () {
     })
     .then(data => {
         console.log("All knowledge cleared:", data);
-        alert("All stored knowledge has been deleted from ChromaDB!");
+        alert(`All stored knowledge for chatbot "${chatbotName}" has been deleted!`);
 
-        
-        document.getElementById("uploaded-docs").innerHTML = "<p>No documents uploaded yet.</p>";
+        document.getElementById("uploaded-docs").innerHTML = "<p>No documents uploaded for this chatbot.</p>";
 
-        
-        return fetch("http://localhost:8000/api/upload/refresh-knowledge-base", {
+        return fetch(`http://localhost:8000/api/upload/refresh-knowledge-base/${user_id}/${chatbotName}`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -152,9 +141,11 @@ window.clearAllKnowledge = function () {
         console.log("Knowledge base refreshed.");
     })
     .catch(error => {
-        console.error("Clear Knowledge Error:", error.message);
-        alert("Error clearing knowledge. Please try again.");
+        console.error("Clear Knowledge Error:", error);
+        alert(`Error clearing knowledge: ${error.message}`);
     });
 };
 
-
+window.onload = function () {
+    setTimeout(fetchUploadedDocuments, 500);
+};

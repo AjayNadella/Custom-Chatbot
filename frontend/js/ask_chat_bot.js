@@ -1,7 +1,13 @@
 window.askChatbot = function () {
     const question = document.getElementById("user-question").value;
+    const chatbotName = localStorage.getItem("selectedChatbot");
     const chatbotType = localStorage.getItem("selectedChatbotType");  
     const user_id = localStorage.getItem("userID");
+
+    if (!chatbotName) {
+        alert("No chatbot selected. Please go back and select a chatbot.");
+        return;
+    }
 
     if (!chatbotType) {
         alert("No chatbot type selected. Please go back and select a chatbot type.");
@@ -14,7 +20,7 @@ window.askChatbot = function () {
     }
 
     
-    fetch("http://localhost:8000/api/upload/refresh-knowledge-base", {
+    fetch(`http://localhost:8000/api/upload/refresh-knowledge-base/${user_id}/${chatbotName}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${localStorage.getItem("userToken")}` }
     })
@@ -30,6 +36,7 @@ window.askChatbot = function () {
             },
             body: JSON.stringify({
                 user_id: user_id,
+                chatbot_name: chatbotName,
                 user_question: question,
                 chatbot_type: chatbotType  
             })
@@ -38,7 +45,7 @@ window.askChatbot = function () {
     .then(response => response.json())
     .then(data => {        
         document.getElementById("response").innerText = data.response;
-        console.log("Chatbot Response:", data);
+        console.log(`Chatbot '${chatbotName}' Response:`, data);
     })
     .catch(error => console.error("Chatbot Error:", error));
 };
