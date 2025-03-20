@@ -174,7 +174,7 @@ async def clear_knowledge_base(user_id: str, chatbot_name: str, user: dict = Dep
 
     
     try:
-        chatbot_docs = knowledge_base.get(where={"user_id": user_id, "chatbot_name": chatbot_name})
+        chatbot_docs = knowledge_base.get(where={"$and": [{"user_id": user_id}, {"chatbot_name": chatbot_name}]})
         chatbot_doc_ids = chatbot_docs.get("ids", [])
 
         if chatbot_doc_ids:
@@ -196,7 +196,7 @@ async def clear_knowledge_base(user_id: str, chatbot_name: str, user: dict = Dep
 
     
     try:
-        knowledge_base = chroma_client.get_or_create_collection(name="chatbot_knowledge")
+        knowledge_base = chroma_client.get_collection(name="chatbot_knowledge")
         print(f"Knowledge base reset for chatbot '{chatbot_name}'.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error resetting knowledge base: {str(e)}")

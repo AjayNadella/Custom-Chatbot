@@ -130,8 +130,8 @@
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                loadChatbots();  // Refresh chatbot list after deletion
-                localStorage.removeItem("selectedChatbot");  // Remove selection if chatbot is deleted
+                loadChatbots();  
+                localStorage.removeItem("selectedChatbot"); 
             })
             .catch(error => console.error("Error deleting chatbot:", error));
         }

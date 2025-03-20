@@ -80,6 +80,9 @@ window.deleteKnowledge = function (filename) {
         alert("No chatbot selected. Please select a chatbot.");
         return;
     }
+    if (!confirm(`Are you sure you want to delete this document/file "${filename}"? This action cannot be undone.`)) {
+        return;
+    }
 
     fetch(`http://localhost:8000/api/upload/delete-knowledge/${user_id}/${chatbotName}/${filename}`, {
         method: "DELETE",
@@ -115,6 +118,10 @@ window.clearAllKnowledge = function () {
     const chatbotName = localStorage.getItem("selectedChatbot");
     const user_id = localStorage.getItem("userID");
     const token = localStorage.getItem("userToken");
+
+    if (!confirm(`Are you sure you want to delete this Whole "${chatbotName}"'s Knowledge base? This action cannot be undone.`)) {
+        return;
+    }
 
     fetch(`http://localhost:8000/api/upload/clear-knowledge-base/${user_id}/${chatbotName}`, {
         method: "DELETE",
