@@ -2,13 +2,14 @@ window.getChatbotEmbedCode = function () {
     const user_id = localStorage.getItem("userID");
     const token = localStorage.getItem("userToken");
     const chatbot_type = localStorage.getItem("selectedChatbotType"); 
+    const chatbotName = localStorage.getItem("selectedChatbot");
 
     if (!user_id || !token || !chatbot_type) {
         alert("User not authenticated. Please log in.");
         return;
     }
 
-    fetch(`http://localhost:8000/deploy-chatbot/${user_id}/${chatbot_type}`, {
+    fetch(`http://localhost:8000/deploy-chatbot/${user_id}/${chatbotName}/${chatbot_type}`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` }  
     })

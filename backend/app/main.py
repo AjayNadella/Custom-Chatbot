@@ -246,10 +246,9 @@ async def user_chatbot(
     chatbot_types_response = await get_chatbot_types()
     chatbot_types = chatbot_types_response["available_chatbot_types"]
     chatbot_description = chatbot_types.get(chatbot_type, "A general-purpose chatbot.")
-    
-    
-    """Allows external applications to query the chatbot API."""
 
+    global knowledge_base
+    
     retrieved_docs = knowledge_base.query(
         query_texts=[user_question],
         n_results=3,
