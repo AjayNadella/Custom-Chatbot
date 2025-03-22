@@ -11,6 +11,160 @@
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
     <script type="module" src="js/upload.js"></script>
+    <style>
+        
+        body {
+            background: linear-gradient(135deg, #A6C1EE, #D4E1F4);  
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+    
+        
+        .container {
+            width: 100%;
+            max-width: 500px;  
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        
+        h1 {
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    
+        
+        input[type="file"] {
+            padding: 6px;
+            font-size: 14px;  
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            width: 100%;
+        }
+    
+        button {
+            padding: 6px 18px;  
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px; 
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: bold;
+            margin: 8px 0;
+            width: auto; 
+        }
+    
+        button:hover {
+            background-color: #0056b3;
+        }
+    
+        button:active {
+            background-color: #003d7a;
+        }
+    
+        
+        h2 {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #333;
+        }
+    
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            font-size: 16px;
+        }
+    
+        li {
+            margin: 8px 0;
+            color: #555;
+            display: flex;
+            justify-content: space-between;  
+            align-items: center;
+        }
+    
+        li button {
+            padding: 4px 8px;  
+            background-color: #ff4c4c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+    
+        li button:hover {
+            background-color: #cc3838;
+        }
+    
+        
+        #logout-btn {
+            background-color: #ff4c4c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;  
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: auto;
+            text-align: center;
+        }
+    
+        #logout-btn:hover {
+            background-color: #cc3838;
+        }
+    
+        
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #333;
+        }
+    
+        footer a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+    
+            h1 {
+                font-size: 24px;
+            }
+    
+            button {
+                padding: 6px 16px;  
+            }
+    
+            input[type="file"] {
+                font-size: 12px;
+            }
+        }
+    </style>
 </head>
 <body onload="fetchUploadedDocuments()">
     <div class="container">

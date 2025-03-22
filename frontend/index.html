@@ -10,17 +10,159 @@
     <script type="module" src="js/firebaseConfig.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build and Deploy Your Chatbot</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build and Deploy Your Chatbot</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        
+        body {
+            background: linear-gradient(135deg, #A6C1EE, #D4E1F4);  
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+    
+        
+        .index-container {
+            width: 100%;
+            max-width: 600px;  
+            background-color: white;
+            padding: 25px;  
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+        }
+    
+        
+        .index-container h1 {
+            font-size: 30px;  
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    
+        
+        .index-container h3 {
+            font-size: 22px;  
+            color: #555;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+    
+        
+        .index-container p {
+            font-size: 14px;  
+            color: #555;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+    
+        
+        .index-container button {
+            padding: 12px 24px;  
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;  
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: auto;  
+            margin-bottom: 10px;  
+        }
+    
+        .index-container button:hover {
+            background-color: #0056b3;
+        }
+    
+        .index-container button:active {
+            background-color: #003d7a;
+        }
+    
+        
+        .index-container footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #333;
+        }
+    
+        .index-container footer a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    
+        
+        .logout-btn {
+            background-color: #ff4c4c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 14px;  
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: auto; 
+            text-align: center;
+        }
+    
+        .logout-btn:hover {
+            background-color: #cc3838;
+        }
+    
+        
+        @media (max-width: 600px) {
+            .index-container {
+                padding: 20px;
+            }
+    
+            .index-container h1 {
+                font-size: 24px;
+            }
+    
+            .index-container button {
+                padding: 10px 20px;  
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
+
+    
+    <div class="index-container">
         <h1>Build and Deploy Your Own Chatbot</h1>
-        <button onclick="nextPage('select_chatbot.html')">Next</button>
+        <h3>Get started with creating and deploying your personalized chatbot easily.</h3>
+        <p>Customize your chatbot, upload your knowledge base, and deploy it to your website with just a few steps.</p>
+        <button onclick="window.location.href='select_chatbot.html'">Next</button>
+        <footer>
+            <p>Powered by <a href="#">ABC Company</a></p>
+        </footer>
     </div>
+
+    
+    <button class="logout-btn" onclick="window.location.href='login.html'">Logout</button>
+
     <script>
         function nextPage(page) {
             window.location.href = page;
         }
     </script>
-    <button id="logout-btn">Logout</button>
 </body>
 </html>

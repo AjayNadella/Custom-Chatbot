@@ -11,6 +11,9 @@ from app.authe import router as auth_router
 import requests
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+
 
 print("Starting FastAPI...")
 
@@ -55,10 +58,20 @@ def verify_firebase_token(credentials: HTTPAuthorizationCredentials = Security(s
 
     return data["users"][0]  
 
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'frontend', 'static')
+
+
+if not os.path.exists(STATIC_DIR):
+    raise RuntimeError(f"Static directory not found: {STATIC_DIR}")
+
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 @app.get("/")
 async def root():
     """Root endpoint for API health check."""
     return {"message": "AI Copilot is running"}
+
 
 @app.get("/chatbot-types", dependencies=[Depends(verify_firebase_token)])
 async def get_chatbot_types():
@@ -263,7 +276,8 @@ async def user_chatbot(
    Your role: {chatbot_description}
     
     ### Instructions:
-    - If the user's question is general (like "hello", "how are you?", "who are you?"), respond naturally as a chatbot while briefly mentioning that you use knowledge from uploaded documents.
+    -just act like a conversational chatbot with exact information, dont give additional text everytime user asks the question.
+    - If the user's question is general (like "hello", "how are you?", "who are you?"), respond naturally as a chatbot
     - If the question relates to the uploaded knowledge, retrieve the most relevant information and provide a well-structured answer.
     - If the knowledge base does not contain relevant information, generate a response using general AI knowledge.
     - Keep responses concise and user-friendly.
@@ -302,39 +316,17 @@ async def deploy_chatbot(user_id: str,chatbot_name: str,chatbot_type: str, user:
 
     
     embed_code = f"""
-    <script>
-        const chatbotName = "{chatbot_name}";
-        const chatbotType = "{chatbot_type}";
-
-        async function askChatbot(question) {{
-            const response = await fetch("http://localhost:8000/user-chatbot/{user_id}/{chatbot_name}", {{
-                method: "POST",
-                headers: {{
-                    "Content-Type": "application/json"
-                }},
-                body: JSON.stringify({{ 
-                    "user_question": question,
-                    "chatbot_type": chatbotType,
-                     }})
-            }});
-
-            if (!response.ok) {{
-                alert("API Error: " + response.status + " " + response.statusText);
-                return;
-            }}
-
-            const data = await response.json();
-            document.getElementById("chatbot-response").innerText = data.response;
-        }}
+    
+    <div id="chatbot-bubble-container"></div>
+    
+    <script src="http://localhost:8000/static/widget-loader.js"
+      data-user-id="{user_id}"
+      data-chatbot-name="{chatbot_name}"
+      data-chatbot-type="{chatbot_type}">
     </script>
-
-    <h3>Chatbot: {chatbot_name}</h3>
-    <input type="text" id="chatbot-input" placeholder="Ask me anything..." />
-    <button onclick="askChatbot(document.getElementById('chatbot-input').value)">Ask</button>
-    <p id="chatbot-response"></p>
     """
-
-    return {"embed_code": embed_code}
+    
+    return JSONResponse(content={"embed_code": embed_code.strip()})
 
 
 

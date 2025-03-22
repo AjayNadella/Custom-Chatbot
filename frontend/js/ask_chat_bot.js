@@ -1,34 +1,22 @@
-window.askChatbot = function () {
-    const question = document.getElementById("user-question").value;
+window.askChatbot = async function () {
+    const userMessage = document.getElementById("user-message").value;
     const chatbotName = localStorage.getItem("selectedChatbot");
-    const chatbotType = localStorage.getItem("selectedChatbotType");  
+    const chatbotType = localStorage.getItem("selectedChatbotType");
     const user_id = localStorage.getItem("userID");
 
-    if (!chatbotName) {
-        alert("No chatbot selected. Please go back and select a chatbot.");
-        return;
-    }
-
-    if (!chatbotType) {
-        alert("No chatbot type selected. Please go back and select a chatbot type.");
-        return;
-    }
-
-    if (!question.trim()) {
-        alert("Please enter a question.");
+    if (!chatbotName || !chatbotType || !userMessage.trim()) {
+        alert("Missing chatbot name, type, or message.");
         return;
     }
 
     
-    fetch(`http://localhost:8000/api/upload/refresh-knowledge-base/${user_id}/${chatbotName}`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${localStorage.getItem("userToken")}` }
-    })
-    .then(() => {
-        console.log("Knowledge base refreshed.");
-        
-        
-        return fetch("http://localhost:8000/generate-response", {
+    addMessageToChat(userMessage, "user");
+
+    
+    const typingMessage = addMessageToChat("Chatbot is typing...", "bot");
+
+    try {
+        const response = await fetch("http://localhost:8000/generate-response", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("userToken")}`,
@@ -37,15 +25,36 @@ window.askChatbot = function () {
             body: JSON.stringify({
                 user_id: user_id,
                 chatbot_name: chatbotName,
-                user_question: question,
-                chatbot_type: chatbotType  
+                user_question: userMessage,
+                chatbot_type: chatbotType
             })
         });
-    })
-    .then(response => response.json())
-    .then(data => {        
-        document.getElementById("response").innerText = data.response;
-        console.log(`Chatbot '${chatbotName}' Response:`, data);
-    })
-    .catch(error => console.error("Chatbot Error:", error));
+
+        const data = await response.json();
+        typingMessage.remove();  
+
+        addMessageToChat(data.response, "bot");
+
+    } catch (error) {
+        console.error("Chatbot Error:", error);
+        typingMessage.remove();
+        addMessageToChat("Error retrieving chatbot response.", "bot");
+    }
+
+    document.getElementById("user-message").value = "";
 };
+
+
+function addMessageToChat(message, sender) {
+    const chatBox = document.getElementById("chat-box");
+    const messageDiv = document.createElement("div");
+
+    messageDiv.classList.add("message");
+    messageDiv.classList.add(sender === "user" ? "user-message" : "bot-message");
+    messageDiv.innerText = message;
+
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;  
+
+    return messageDiv; 
+}

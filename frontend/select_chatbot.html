@@ -11,6 +11,135 @@
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/auth-guard.js"></script>
     <script type="module" src="js/chatbot.js"></script> 
+
+    <style>
+        
+        body {
+            background: linear-gradient(135deg, #A6C1EE, #D4E1F4);  
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+    
+        
+        .container {
+            width: 100%;
+            max-width: 500px;  
+            background-color: white;
+            padding: 25px;  
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        
+        h1 {
+            font-size: 24px;  
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    
+        
+        h3 {
+            font-size: 18px;  
+            color: #555;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+    
+        
+        input[type="text"], select {
+            padding: 8px;
+            font-size: 14px;  
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    
+        
+        button {
+            padding: 10px 25px;  
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;  
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: bold;
+            width: auto;  
+            margin-bottom: 8px;  
+        }
+    
+        button:hover {
+            background-color: #0056b3;
+        }
+    
+        button:active {
+            background-color: #003d7a;
+        }
+    
+       
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #333;
+        }
+    
+        footer a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    
+        
+        #logout-btn {
+            background-color: #ff4c4c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;  
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: auto; 
+            text-align: center;
+        }
+    
+        #logout-btn:hover {
+            background-color: #cc3838;
+        }
+    
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+    
+            h1 {
+                font-size: 22px;
+            }
+    
+            button {
+                padding: 8px 20px;  
+            }
+    
+            input[type="text"], select {
+                font-size: 12px;  
+            }
+        }
+    </style>
 </head>
 <body onload="loadChatbots(); loadChatbotTypes();">
     <div class="container">
@@ -22,7 +151,6 @@
             <option value="" disabled selected>-- Select a chatbot --</option>
         </select>
         
-
         <button onclick="deleteChatbot()">Delete Selected Chatbot</button>
 
         <hr>
@@ -41,6 +169,9 @@
         <button onclick="nextPage('upload_knowledge.html')">Next</button>
         <button onclick="history.back()">Back</button>
     </div>
+
+    
+    <button id="logout-btn" onclick="window.location.href='login.html'">Logout</button>
 
     <script>
         const token = localStorage.getItem("userToken");
@@ -144,7 +275,5 @@
             window.location.href = page;
         }
     </script>
-
-    <button id="logout-btn">Logout</button>
 </body>
 </html>
